@@ -1,0 +1,5 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+*/2 * * * * root /bin/bash -c '[[ $(netstat -natp|grep ":5900"|wc -l) -eq 0 ]] && killall vncviewer;'
+

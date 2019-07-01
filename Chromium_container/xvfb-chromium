@@ -1,0 +1,41 @@
+#!/bin/bash
+set -x
+
+groupadd -r kiosk 
+useradd -r -g kiosk -G audio,video kiosk
+mkdir -p /home/kiosk/.config
+
+echo "CHROMIUM_FLAGS=\"\
+--start-maximized \
+--window-size=1680,1050 \
+--window-position=0,0 \
+--disable-gpu \
+--noerrdialogs \
+--disable-translate \
+--restore-last-session \
+\"" > $HOME/.chromium-browser.init
+#--kiosk \
+
+[[ -d $HOME/.config/chromium/Default ]] || tar xzvf $HOME/.config/chromium.tar.gz -C $HOME/.config/
+
+chown -R kiosk:kiosk $HOME
+
+while [ 1 ]; do
+    rm -f $HOME/.config/chromium/SingletonCookie
+    rm -f $HOME/.config/chromium/SingletonLock
+    rm -f $HOME/.config/chromium/SingletonSocket
+    sed -i 's/"exited_cleanly":[[:space:]]*false/"exited_cleanly":true/' $HOME/.config/chromium/Default/Preferences
+    sed -i 's/"exit_type":[[:space:]]*"Crashed"/"exit_type": "Normal"/' $HOME/.config/chromium/Default/Preferences
+    sed -i 's/"exited_cleanly":[[:space:]]*false/"exited_cleanly": true/' $HOME/.config/chromium/"Local State"
+
+    sudo -u kiosk /bin/bash -c 'x11vnc -shared -forever -many \
+            -create \
+            -env FD_PROG="/usr/bin/chromium-browser; sleep 2; killall -I chromium-browser; killall -I Xvfb; killall -I x11vnc;" \
+            -env X11VNC_FINDDISPLAY_ALWAYS_FAILS=1 \
+            -env X11VNC_CREATE_GEOM=${1:-1680x1050x16} \
+            -gone "killall -I chromium-browser;sleep 1;killall -I Xvfb;" \
+            -rfbport 5900 \
+            -nopw'
+    sleep 2
+done
+
