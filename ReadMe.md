@@ -1,3 +1,6 @@
+## Raspberry pi 3 VNC kiosk
+The goal was to use raspberry 3B to show monitoring dashboards(Zabbix) on a screen. Raspberri pi 3 is not power enough to do that on its own hardware so I run a VNC server with dashboards in docker container on a more powerful host and raspberry kiosk connects to the docker container and show the dashboards via VNC. This approach worked pretty nicely. 
+
 Container to render pages, Raspbery will connect to the container via VNC and just show the pictures.
 ## Docker container
 Launch:
